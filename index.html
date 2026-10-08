@@ -82,7 +82,7 @@ body[data-view="watch"] .phone,body[data-view="phone"] .watch{opacity:0;pointer-
 
 .big-metric b { font-size: 64px; font-weight: 800; line-height: 1; display: block; margin-bottom: 5px; }
 .big-metric span { font-size: 16px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;}
-.big-metric .sub { font-size: 14px; color: var(--green); margin-top: 10px; display: block;}
+.big-metric .sub { font-size: 14px; color: var(--green); margin-top: 10px; display: block; font-weight: 700;}
 .w-alert-btn { position: absolute; bottom: 20px; background: var(--red); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; }
 
 .alert{position:absolute;inset:0;background:var(--red);display:none;flex-direction:column;align-items:center; justify-content:center;text-align:center;gap:6px;padding:30px;z-index:5;animation:flash .45s infinite alternate; border-radius: 50%;}
@@ -134,7 +134,6 @@ body[data-detail="expert"] .expert-data { display: block; }
 .chat-input button { background: var(--green); color: #000; width: 42px; height: 42px; border-radius: 50%; font-weight: bold; display: grid; place-items: center;}
 .sci-card { background: var(--panel); border-left: 4px solid var(--blue); padding: 14px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.4;}
 .sci-card b { display: block; font-size: 15px; color: #fff; margin-bottom: 4px;}
-.sci-card a { color: var(--blue); text-decoration: none; font-weight: 700; display: inline-block; margin-top: 6px;}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -178,9 +177,8 @@ body[data-detail="expert"] .expert-data { display: block; }
     <span id="corosState">Sensor standalone</span>
     <button id="btnCoros">Connect COROS</button>
   </div>
-  <!-- NOUVEAU SIMULATEUR DE VITESSE -->
   <label class="demo">Run Speed
-    <input id="sliderSpeed" type="range" min="8" max="21" step="0.5" value="10">
+    <input id="sliderSpeed" type="range" min="5" max="21" step="0.5" value="10">
     <output id="speedOut">10.0 km/h</output>
   </label>
 </div>
@@ -339,7 +337,16 @@ const ZONES = [
 ];
 const zoneOf = l => ZONES.find(z => l < z.max);
 
-// Modèle Physiologique : Vitesse -> HR, Temp, Sweat & Lactate (Courbe Exponentielle)
+// Calcul de la Zone FC pure (Z1 à Z5)
+function getHrZone(hr) {
+  if (hr < 100) return 1;
+  if (hr < 140) return 2;
+  if (hr < 160) return 3;
+  if (hr < 180) return 4;
+  return 5;
+}
+
+// Modèle Physiologique : Vitesse -> HR, Temp, Sweat & Lactate 
 let targetSpeed = 10;
 let currentSpeed = 10;
 let currentLactate = 1.0;
@@ -348,14 +355,16 @@ let alerted = false;
 
 function getMetabolics(speedKmh) {
   let paceSec = (60 / speedKmh) * 60;
-  let hr = 110 + ((speedKmh - 8) / 12) * 85; 
-  let temp = 32.0 + (speedKmh - 8) * 0.15;
-  let sweat = 0.4 + (speedKmh - 8) * 0.12;
   
-  // Modélisation de la courbe en "crosse de hockey" du lactate
+  // FC proportionnelle à la vitesse (5 km/h = ~90 bpm | 21 km/h = ~195 bpm)
+  let hr = 90 + ((speedKmh - 5) / 16) * 105; 
+  let temp = 31.0 + (speedKmh - 5) * 0.15;
+  let sweat = 0.2 + (speedKmh - 5) * 0.1;
+  
+  // Courbe exponentielle du lactate à partir de 10 km/h (LT1 autour de 14-15km/h)
   let targetLac = 0.8;
-  if (speedKmh > 9) {
-      targetLac = 0.8 + Math.pow(speedKmh - 9, 2.5) * 0.015;
+  if (speedKmh > 10) {
+      targetLac = 0.8 + Math.pow(speedKmh - 10, 2.3) * 0.025;
   }
   return { paceSec, hr, temp, sweat, targetLac };
 }
@@ -397,9 +406,11 @@ function renderWatch(){
   $('gCenter').innerHTML = isExpert ? `<b>${f1(currentLactate)}</b><small>mmol/L</small>` : `<span class="hint">${z.msg}</span>`;
 
   let m = getMetabolics(currentSpeed);
-  $('pace').textContent = fmtPace(m.paceSec);
-  $('hr').textContent = Math.round(m.hr);$('skinTemp').textContent = m.temp.toFixed(1);
-  $('sweatRate').textContent = m.sweat.toFixed(2);$('hrSub').textContent = `Zone ${z.name.split(' ')[0]}`;
+  $('pace').textContent = fmtPace(m.paceSec);$('hr').textContent = Math.round(m.hr);
+  $('skinTemp').textContent = m.temp.toFixed(1);$('sweatRate').textContent = m.sweat.toFixed(2);
+  
+  // Affichage de la vraie Zone FC indépendante du lactate
+  $('hrSub').textContent = `Zone ${getHrZone(m.hr)}`;
 
   if (z.key === 'red' && !alerted){ alerted = true; triggerAlert(); }
   if (z.key !== 'red') alerted = false;
@@ -412,15 +423,15 @@ function triggerAlert(){
 }
 function ackAlert(){ $('alert').classList.remove('show');$('device').classList.remove('buzz'); }
 
-// Loop principal de simulation : Vitesse immédiate, Lactate avec inertie physiologique
+// Loop principal de simulation
 setInterval(() => {
   elapsed++; 
   $('clock').textContent = `${String(Math.floor(elapsed/60)).padStart(2,'0')}:${String(elapsed%60).padStart(2,'0')}`;
   
-  // Inertie mécanique (la vitesse s'ajuste vite)
+  // Inertie de la vitesse
   currentSpeed += (targetSpeed - currentSpeed) * 0.2;
   
-  // Inertie physiologique du lactate (rattrape doucement la cible due à la latence)
+  // Inertie physiologique du lactate
   let m = getMetabolics(currentSpeed);
   currentLactate += (m.targetLac - currentLactate) * 0.05; 
   
