@@ -8,11 +8,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-/* ===== Variables de design ===== */
+/* ===== Variables de design (Ajout du Orange pour Z4) ===== */
 :root{
   --bg:#0b1016; --panel:#141b24; --line:#243040; --text:#f1f5f9; --muted:#8a9bb0;
-  --blue:#3b82f6; --green:#22c55e; --yellow:#facc15; --red:#ef4444;
-  --zone:var(--blue);
+  --blue:#3b82f6; --green:#22c55e; --yellow:#facc15; --orange:#f97316; --red:#ef4444;
+  --zone:var(--green);
   --font:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;
 }
 *{box-sizing:border-box;margin:0}
@@ -82,7 +82,7 @@ body[data-view="watch"] .phone,body[data-view="phone"] .watch{opacity:0;pointer-
 
 .big-metric b { font-size: 64px; font-weight: 800; line-height: 1; display: block; margin-bottom: 5px; }
 .big-metric span { font-size: 16px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;}
-.big-metric .sub { font-size: 14px; color: var(--green); margin-top: 10px; display: block; font-weight: 700;}
+.big-metric .sub { font-size: 16px; margin-top: 10px; display: block; font-weight: 800; transition: color 0.3s;}
 .w-alert-btn { position: absolute; bottom: 20px; background: var(--red); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; }
 
 .alert{position:absolute;inset:0;background:var(--red);display:none;flex-direction:column;align-items:center; justify-content:center;text-align:center;gap:6px;padding:30px;z-index:5;animation:flash .45s infinite alternate; border-radius: 50%;}
@@ -198,7 +198,7 @@ body[data-detail="expert"] .expert-data { display: block; }
 
       <!-- Page 1 : Lactate -->
       <div class="watch-page active" id="w-page-0">
-        <span class="w-zone" id="zoneName">Warm-up</span>
+        <span class="w-zone" id="zoneName">Z1 - Recovery</span>
         <div class="gauge">
           <svg viewBox="0 0 200 110" aria-hidden="true">
             <path class="arc-bg" d="M20 100 A80 80 0 0 1 180 100"/>
@@ -215,7 +215,7 @@ body[data-detail="expert"] .expert-data { display: block; }
       <div class="watch-page big-metric" id="w-page-1">
         <b id="pace">6:00</b>
         <span>Pace /km</span>
-        <span class="sub" id="paceSub">Target: 4:45</span>
+        <span class="sub" style="color: #fff">Target: 4:45</span>
       </div>
 
       <!-- Page 3 : HR -->
@@ -329,15 +329,20 @@ const fmtPace = s => `${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,
 const fmtTime = s => `${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(Math.round(s%60)).padStart(2,'0')}`;
 const f1 = n => n.toFixed(1);
 
+// Nouvelles Zones avec le mapping couleur demandé (Z1 Vert -> Z5 Rouge)
 const ZONES = [
-  {max:1.8, key:'blue',   name:'Warm-up',            msg:'Fat Oxidation'},
-  {max:3.2, key:'green',  name:'Aerobic (LT1)',      msg:'Steady State'},
-  {max:4.8, key:'yellow', name:'Anaerobic (LT2)',    msg:'MLSS Limit'},
-  {max:99,  key:'red',    name:'Red Zone',           msg:'Acidosis'}
+  {max:1.5, key:'green',  name:'Z1 - Recovery',      msg:'Base / Warm-up'},
+  {max:2.5, key:'blue',   name:'Z2 - Endurance',     msg:'Fat Oxidation'},
+  {max:4.0, key:'yellow', name:'Z3 - Tempo',         msg:'Aerobic (LT1)'},
+  {max:6.0, key:'orange', name:'Z4 - Threshold',     msg:'MLSS Limit (LT2)'},
+  {max:99,  key:'red',    name:'Z5 - Anaerobic',     msg:'Acidosis'}
 ];
 const zoneOf = l => ZONES.find(z => l < z.max);
 
-// Calcul de la Zone FC pure (Z1 à Z5)
+// Tableau de couleurs correspondant aux Zones 1 à 5
+const HR_COLORS = ['var(--green)', 'var(--blue)', 'var(--yellow)', 'var(--orange)', 'var(--red)'];
+
+// Calcul de la Zone FC pure
 function getHrZone(hr) {
   if (hr < 100) return 1;
   if (hr < 140) return 2;
@@ -349,22 +354,22 @@ function getHrZone(hr) {
 // Modèle Physiologique : Vitesse -> HR, Temp, Sweat & Lactate 
 let targetSpeed = 10;
 let currentSpeed = 10;
-let currentLactate = 1.0;
+let currentLactate = 0.8;
 let elapsed = 0;
 let alerted = false;
 
 function getMetabolics(speedKmh) {
   let paceSec = (60 / speedKmh) * 60;
   
-  // FC proportionnelle à la vitesse (5 km/h = ~90 bpm | 21 km/h = ~195 bpm)
+  // FC proportionnelle à la vitesse (5 km/h = 90 bpm | 21 km/h = ~195 bpm)
   let hr = 90 + ((speedKmh - 5) / 16) * 105; 
   let temp = 31.0 + (speedKmh - 5) * 0.15;
   let sweat = 0.2 + (speedKmh - 5) * 0.1;
   
-  // Courbe exponentielle du lactate à partir de 10 km/h (LT1 autour de 14-15km/h)
+  // Modélisation courbe Lactate adaptée pour franchir les seuils Z1->Z5 logiquement
   let targetLac = 0.8;
-  if (speedKmh > 10) {
-      targetLac = 0.8 + Math.pow(speedKmh - 10, 2.3) * 0.025;
+  if (speedKmh > 7) {
+      targetLac = 0.8 + Math.pow(speedKmh - 7, 2.2) * 0.025;
   }
   return { paceSec, hr, temp, sweat, targetLac };
 }
@@ -409,8 +414,10 @@ function renderWatch(){
   $('pace').textContent = fmtPace(m.paceSec);$('hr').textContent = Math.round(m.hr);
   $('skinTemp').textContent = m.temp.toFixed(1);$('sweatRate').textContent = m.sweat.toFixed(2);
   
-  // Affichage de la vraie Zone FC indépendante du lactate
-  $('hrSub').textContent = `Zone ${getHrZone(m.hr)}`;
+  // Affichage Zone FC indépendante mais avec le même code couleur
+  let hrZ = getHrZone(m.hr);
+  $('hrSub').textContent = `Zone ${hrZ}`;
+  $('hrSub').style.color = HR_COLORS[hrZ - 1];
 
   if (z.key === 'red' && !alerted){ alerted = true; triggerAlert(); }
   if (z.key !== 'red') alerted = false;
@@ -444,9 +451,9 @@ $('sliderSpeed').addEventListener('input', e => {
     $('speedOut').textContent = f1(targetSpeed) + ' km/h'; 
 });
 $('btnRed').addEventListener('click', () => { 
-    targetSpeed = 20; 
-    $('sliderSpeed').value = 20; 
-    $('speedOut').textContent = '20.0 km/h';
+    targetSpeed = 21; 
+    $('sliderSpeed').value = 21; 
+    $('speedOut').textContent = '21.0 km/h';
 });
 $('btnAck').addEventListener('click', ackAlert);
 
