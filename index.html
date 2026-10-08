@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sweat Lactate Tracking – Prototype HMI</title>
+<title>SWEATSHIFT – HMI Prototype</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -21,18 +21,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 button{font:inherit;color:inherit;cursor:pointer;border:0}
 button:focus-visible,input:focus-visible{outline:3px solid #fff;outline-offset:3px}
 
+/* ===== Branding Logo ===== */
+.brand-header { display: flex; align-items: center; gap: 14px; padding: 10px 20px; border-radius: 14px; margin-bottom: 5px;}
+.brand-text { display: flex; flex-direction: column; }
+.brand-name { font-weight: 800; font-size: 26px; letter-spacing: 3px; color: #fff; line-height: 1; display: flex; align-items: center; }
+.brand-sub { font-size: 10px; color: #8a9bb0; letter-spacing: 2.5px; font-weight: 600; margin-top: 5px; text-transform: uppercase; }
+
 /* ===== Panneau de contrôle ===== */
-.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center; max-width: 850px;}
-.switch{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px}
-.switch button{background:none;padding:10px 20px;border-radius:999px;font-weight:700;font-size:15px;color:var(--muted);transition:.3s}
+.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center; max-width: 900px; background: var(--panel); padding: 12px; border-radius: 20px; border: 1px solid var(--line);}
+.switch{display:flex;background:#000;border:1px solid var(--line);border-radius:999px;padding:4px}
+.switch button{background:none;padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;color:var(--muted);transition:.3s}
 .switch button.on{background:#fff;color:#0b1016}
-.demo{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);
-  border-radius:16px;padding:10px 16px;font-size:15px;color:var(--muted);transition:opacity .4s}
-.demo input{width:150px;accent-color:var(--zone)}
-.demo output{min-width:80px;color:var(--text);font-weight:700}
+.demo{display:flex;align-items:center;gap:12px;background:#000;border:1px solid var(--line);
+  border-radius:16px;padding:10px 16px;font-size:14px;color:var(--muted);transition:opacity .4s}
+.demo input{width:140px;accent-color:var(--green)}
+.demo output{min-width:70px;color:var(--text);font-weight:700}
 body[data-view="phone"] .demo{opacity:0;pointer-events:none}
-.coros{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:6px 8px 6px 14px;font-size:14px;color:var(--muted)}
-.coros button{background:#fff;color:#0b1016;font-weight:800;padding:10px 16px;border-radius:12px;font-size:15px}
+.coros{display:flex;align-items:center;gap:10px;background:#000;border:1px solid var(--line);border-radius:16px;padding:6px 8px 6px 14px;font-size:13px;color:var(--muted)}
+.coros button{background:#fff;color:#0b1016;font-weight:800;padding:8px 14px;border-radius:12px;font-size:14px}
 .coros.on{border-color:var(--green);color:var(--text)}
 .coros.on button{background:#ffffff1f;color:var(--text)}
 
@@ -40,29 +46,25 @@ body[data-view="phone"] .demo{opacity:0;pointer-events:none}
 .stage{flex:1;display:grid;place-items:start center; margin-top: 10px;}
 .device{position:relative;overflow:hidden;background:#000;border:8px solid #1c2633;
   box-shadow:0 0 0 2px #0a0e14,0 30px 70px rgba(0,0,0,.6);transform-origin:top center;transform:scale(var(--s,1));
-  /* Montre Ronde */
   width:340px;height:340px;border-radius:170px;
   transition:width .7s cubic-bezier(.7,0,.2,1),height .7s cubic-bezier(.7,0,.2,1),border-radius .7s cubic-bezier(.7,0,.2,1)}
-body[data-view="phone"] .device{width:390px;height:790px;border-radius:52px}
+body[data-view="phone"] .device{width:390px;height:790px;border-radius:48px}
 .layer{position:absolute;top:0;left:50%;transform:translateX(-50%);transition:opacity .35s; width: 100%; height:100%;}
 body[data-view="watch"] .phone,body[data-view="phone"] .watch{opacity:0;pointer-events:none}
 
-/* ===== VUE 1 : LA MONTRE (Ronde & Swipeable) ===== */
+/* ===== VUE 1 : LA MONTRE ===== */
 .watch{
   display:flex;flex-direction:column;
   background:radial-gradient(120% 90% at 50% 20%,color-mix(in srgb,var(--zone) 40%,#000) 0%,#06090d 78%);
-  transition:background .8s;
-  justify-content: center; align-items: center; position: relative;
+  transition:background .8s; justify-content: center; align-items: center; position: relative;
 }
 .watch-page { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; }
 .watch-page.active { display: flex; }
 
-/* Navigation Montre (Flèches) */
 .w-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 100%; display: flex; justify-content: space-between; padding: 0 10px; pointer-events: none; }
 .w-nav-btn { pointer-events: auto; background: rgba(255,255,255,0.1); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; backdrop-filter: blur(4px); transition: 0.2s;}
 .w-nav-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.3); }
 
-/* Elements Montre */
 .w-top-status { position: absolute; top: 20px; font-size: 13px; color: #ffffffb0; font-weight: 600; display: flex; gap: 6px; }
 .w-top-status i { color: var(--green); font-style: normal; display: none; }
 .w-top-status.linked i { display: inline; }
@@ -78,16 +80,12 @@ body[data-view="watch"] .phone,body[data-view="phone"] .watch{opacity:0;pointer-
 .g-center small{display:block;font-size:14px;color:#ffffffb8;margin-top:2px;font-weight:600}
 .g-center .hint{font-size:15px;color:#ffffffc0;font-weight:600}
 
-/* Grandes métriques (Onglets Vitesse / HR) */
 .big-metric b { font-size: 64px; font-weight: 800; line-height: 1; display: block; margin-bottom: 5px; }
 .big-metric span { font-size: 16px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;}
 .big-metric .sub { font-size: 14px; color: var(--green); margin-top: 10px; display: block;}
-
-/* Alerte Bouton en bas de montre */
 .w-alert-btn { position: absolute; bottom: 20px; background: var(--red); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; }
 
-.alert{position:absolute;inset:0;background:var(--red);display:none;flex-direction:column;align-items:center;
-  justify-content:center;text-align:center;gap:6px;padding:30px;z-index:5;animation:flash .45s infinite alternate; border-radius: 50%;}
+.alert{position:absolute;inset:0;background:var(--red);display:none;flex-direction:column;align-items:center; justify-content:center;text-align:center;gap:6px;padding:30px;z-index:5;animation:flash .45s infinite alternate; border-radius: 50%;}
 .alert.show{display:flex}
 .alert h2{font-size:32px;line-height:1;font-weight:800}
 .alert p{font-size:15px;font-weight:600;}
@@ -96,13 +94,10 @@ body[data-view="watch"] .phone,body[data-view="phone"] .watch{opacity:0;pointer-
 .device.buzz{animation:buzz .12s linear infinite}
 @keyframes buzz{0%{translate:-4px 1px}25%{translate:4px -2px}50%{translate:-3px -1px}75%{translate:3px 2px}100%{translate:0 0}}
 
-/* ===== VUE 2 : L'APPLICATION MOBILE (Avec Bottom Nav) ===== */
+/* ===== VUE 2 : L'APPLICATION MOBILE ===== */
 .phone{background:#0e141b; display:flex;flex-direction:column; padding-bottom: 70px;}
-
-/* Phone Screens */
 .p-screen { display: none; flex-direction: column; gap: 12px; padding: 24px 16px 16px; overflow-y: auto; height: 100%;}
 .p-screen.active { display: flex; }
-
 .p-head{display:flex;justify-content:space-between;align-items:center;padding:0 4px}
 .p-head h1{font-size:22px;font-weight:800}
 .p-head span{font-size:14px;color:var(--muted);font-weight:600}
@@ -113,7 +108,7 @@ body[data-view="watch"] .phone,body[data-view="phone"] .watch{opacity:0;pointer-
 .card.key{border-color:color-mix(in srgb,var(--green) 55%,transparent)}
 .card.key .big{color:var(--green)}
 
-/* Expert Phone (Graphiques) */
+/* Expert Phone */
 .expert-data { display: none; }
 body[data-detail="expert"] .expert-data { display: block; }
 .chart-box{position:relative;height:120px;margin-top:10px;}
@@ -124,7 +119,6 @@ body[data-detail="expert"] .expert-data { display: block; }
 .bar{height:14px;background:#ffffff14;border-radius:99px;overflow:hidden;margin:10px 0 4px}
 .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--green));border-radius:99px;transition:width 1.2s ease .4s}
 .bar-lbl{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);font-weight:600}
-.note{font-size:12.5px;color:var(--muted);text-align:center;padding:0 10px;margin-top:auto}
 
 /* Phone Bottom Nav */
 .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 75px; background: rgba(20, 27, 36, 0.9); backdrop-filter: blur(10px); border-top: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center; padding-bottom: 10px;}
@@ -132,14 +126,12 @@ body[data-detail="expert"] .expert-data { display: block; }
 .nav-item svg { width: 22px; height: 22px; fill: currentColor; }
 .nav-item.active { color: var(--green); }
 
-/* Chatbot UI */
+/* Chatbot & Science UI */
 .chat-msg { background: #ffffff10; padding: 12px 16px; border-radius: 16px; border-bottom-left-radius: 4px; font-size: 15px; line-height: 1.4; margin-bottom: 10px; max-width: 90%; align-self: flex-start;}
 .chat-msg.user { background: color-mix(in srgb, var(--green) 20%, transparent); border-radius: 16px; border-bottom-right-radius: 4px; border-bottom-left-radius: 16px; align-self: flex-end; color: #fff; border: 1px solid var(--green);}
 .chat-input { display: flex; gap: 8px; margin-top: auto; }
 .chat-input input { flex: 1; background: #000; border: 1px solid var(--line); border-radius: 20px; padding: 12px 16px; color: #fff; font-family: inherit;}
 .chat-input button { background: var(--green); color: #000; width: 42px; height: 42px; border-radius: 50%; font-weight: bold; display: grid; place-items: center;}
-
-/* Science UI */
 .sci-card { background: var(--panel); border-left: 4px solid var(--blue); padding: 14px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.4;}
 .sci-card b { display: block; font-size: 15px; color: #fff; margin-bottom: 4px;}
 .sci-card a { color: var(--blue); text-decoration: none; font-weight: 700; display: inline-block; margin-top: 6px;}
@@ -149,7 +141,30 @@ body[data-detail="expert"] .expert-data { display: block; }
 </head>
 <body data-view="watch" data-detail="simple">
 
-<!-- Commandes -->
+<!-- BRANDING LOGO -->
+<div class="brand-header">
+  <svg width="44" height="44" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="2" y="2" width="36" height="36" rx="10" stroke="#243040" stroke-width="2.5" fill="#141b24"/>
+    <line x1="8" y1="29" x2="32" y2="29" stroke="#ffffff15" stroke-width="1"/>
+    <line x1="8" y1="10" x2="8" y2="30" stroke="#ffffff15" stroke-width="1"/>
+    <path d="M10 26C15 26 18 25 21 23C25 20 27 15 30 11" stroke="url(#lactate_grad)" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="21" cy="23" r="2.5" fill="#facc15"/>
+    <circle cx="30" cy="11" r="3" fill="#ef4444"/>
+    <defs>
+      <linearGradient id="lactate_grad" x1="10" y1="26" x2="30" y2="11" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#3b82f6"/>
+        <stop offset="0.5" stop-color="#22c55e"/>
+        <stop offset="1" stop-color="#ef4444"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <div class="brand-text">
+    <div class="brand-name">SWEAT<span style="color: #22c55e; margin-left: 2px;">SHIFT</span></div>
+    <div class="brand-sub">Metabolic Intelligence</div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
 <div class="top">
   <div class="switch" role="tablist">
     <button id="tabWatch" class="on" role="tab">Smartwatch</button>
@@ -163,17 +178,18 @@ body[data-detail="expert"] .expert-data { display: block; }
     <span id="corosState">Sensor standalone</span>
     <button id="btnCoros">Connect COROS</button>
   </div>
-  <label class="demo">Simulate Lactate
-    <input id="slider" type="range" min="0.8" max="8" step="0.1" value="1.5">
-    <output id="sliderOut">1.5 mmol/L</output>
+  <!-- NOUVEAU SIMULATEUR DE VITESSE -->
+  <label class="demo">Run Speed
+    <input id="sliderSpeed" type="range" min="8" max="21" step="0.5" value="10">
+    <output id="speedOut">10.0 km/h</output>
   </label>
 </div>
 
-<!-- L'appareil -->
+<!-- DEVICE STAGE -->
 <div class="stage">
   <div class="device" id="device">
 
-    <!-- ========== ÉCRAN MONTRE (RONDE) ========== -->
+    <!-- ========== WATCH ========== -->
     <section class="layer watch" aria-label="Smartwatch">
       <div class="w-top-status" id="clockWrap"><i>COROS</i><span id="clock">00:00</span></div>
       
@@ -199,16 +215,16 @@ body[data-detail="expert"] .expert-data { display: block; }
 
       <!-- Page 2 : Pace -->
       <div class="watch-page big-metric" id="w-page-1">
-        <b id="pace">5:30</b>
+        <b id="pace">6:00</b>
         <span>Pace /km</span>
-        <span class="sub">Target: 4:45</span>
+        <span class="sub" id="paceSub">Target: 4:45</span>
       </div>
 
       <!-- Page 3 : HR -->
       <div class="watch-page big-metric" id="w-page-2">
         <b id="hr">115</b>
         <span>Heart Rate</span>
-        <span class="sub">Zone 2</span>
+        <span class="sub" id="hrSub">Zone 2</span>
       </div>
 
       <button class="w-alert-btn" id="btnRed">TEST ALERT</button>
@@ -220,9 +236,8 @@ body[data-detail="expert"] .expert-data { display: block; }
       </div>
     </section>
 
-    <!-- ========== ÉCRAN APPLICATION MOBILE ========== -->
+    <!-- ========== PHONE ========== -->
     <section class="layer phone" aria-label="Mobile app">
-      
       <!-- Onglet 1 : Dashboard -->
       <div class="p-screen active" id="p-dash">
         <div class="p-head"><h1>Ultra Prep</h1><span>Week 12 of 16</span></div>
@@ -257,13 +272,13 @@ body[data-detail="expert"] .expert-data { display: block; }
         </article>
       </div>
 
-      <!-- Onglet 2 : AI Coach (Chat) -->
+      <!-- Onglet 2 : AI Coach -->
       <div class="p-screen" id="p-chat">
         <div class="p-head"><h1>DigiMove Coach</h1><span>AI Agent</span></div>
         <div style="flex:1; display:flex; flex-direction:column; justify-content: flex-end; padding-bottom: 10px;">
           <div class="chat-msg">Bonjour Yann ! Ton allure au seuil LT1 s'est améliorée de 33s/km depuis le début du plan. Belle progression !</div>
           <div class="chat-msg user">Merci ! Je suis prêt pour le fractionné d'aujourd'hui.</div>
-          <div class="chat-msg">Parfait. Le modèle métabolique indique une légère baisse de ta conductivité cutanée hier. Pense à bien t'hydrater avant la séance. Objectif cible sur la montre : 4:45/km.</div>
+          <div class="chat-msg">Parfait. Le modèle métabolique indique une légère baisse de ta conductivité cutanée hier. Pense à bien t'hydrater. Objectif cible sur la montre : 4:45/km.</div>
         </div>
         <div class="chat-input">
           <input type="text" placeholder="Ask AI Coach...">
@@ -271,27 +286,22 @@ body[data-detail="expert"] .expert-data { display: block; }
         </div>
       </div>
 
-      <!-- Onglet 3 : Science (Littérature) -->
+      <!-- Onglet 3 : Science -->
       <div class="p-screen" id="p-sci">
         <div class="p-head"><h1>Literature Hub</h1><span>Validated Sources</span></div>
-        <p class="note" style="text-align:left; margin-bottom: 10px;">Research backing the sensor and ML calibration model:</p>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 10px;">Research backing the sensor and ML calibration model:</p>
         
         <div class="sci-card">
           <b>Enzymatic electrochemical biosensors</b>
           Yang, Y., et al. (2024). Biosensors & Bioelectronics.
-          <br><a href="#">Read Abstract ↗</a>
         </div>
-        
         <div class="sci-card">
           <b>Sweat lactate monitoring: Advancements</b>
           Messina, A., & Giardi, M. T. (2024). Sensors & Actuators.
-          <br><a href="#">Read Abstract ↗</a>
         </div>
-        
         <div class="sci-card">
           <b>Wearable microfluidic sweat sampling</b>
           Xuan, X., et al. (2021). Delay dynamics & sweat duct fill times. ACS Sensors.
-          <br><a href="#">Read Abstract ↗</a>
         </div>
       </div>
 
@@ -310,13 +320,12 @@ body[data-detail="expert"] .expert-data { display: block; }
           Science
         </button>
       </nav>
-
     </section>
   </div>
 </div>
 
 <script>
-/* ================= LOGIQUE FRONT-END ================= */
+/* ================= LOGIQUE PHYSIOLOGIQUE & HMI ================= */
 const $ = id => document.getElementById(id);
 const fmtPace = s => `${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,'0')}`;
 const fmtTime = s => `${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(Math.round(s%60)).padStart(2,'0')}`;
@@ -330,27 +339,39 @@ const ZONES = [
 ];
 const zoneOf = l => ZONES.find(z => l < z.max);
 
-const DEFAULT_LT1 = [360,355,352,348,345,340,338,335,332,328,325,322];
+// Modèle Physiologique : Vitesse -> HR, Temp, Sweat & Lactate (Courbe Exponentielle)
+let targetSpeed = 10;
+let currentSpeed = 10;
+let currentLactate = 1.0;
+let elapsed = 0;
+let alerted = false;
 
-function simulatedMetrics(l){
-  return { pace: 420 - (l-0.8)*(420-240)/7.2, hr: 115 + (l-0.8)*(185-115)/7.2, temp: 32.0 + (l-0.8)*0.5, sweat: 0.5 + (l-0.8)*0.2 };
+function getMetabolics(speedKmh) {
+  let paceSec = (60 / speedKmh) * 60;
+  let hr = 110 + ((speedKmh - 8) / 12) * 85; 
+  let temp = 32.0 + (speedKmh - 8) * 0.15;
+  let sweat = 0.4 + (speedKmh - 8) * 0.12;
+  
+  // Modélisation de la courbe en "crosse de hockey" du lactate
+  let targetLac = 0.8;
+  if (speedKmh > 9) {
+      targetLac = 0.8 + Math.pow(speedKmh - 9, 2.5) * 0.015;
+  }
+  return { paceSec, hr, temp, sweat, targetLac };
 }
 
+/* --- Coros Mock --- */
+const DEFAULT_LT1 = [360,355,352,348,345,340,338,335,332,328,325,322];
 const Coros = {
-  connected: false, sample: null,
+  connected: false,
   async connect(){
     await new Promise(r => setTimeout(r, 800)); 
     this.connected = true;
     buildDashboard([315,312,308,305,301,298,295,292,290,288,285,282]); 
   },
   disconnect(){
-    this.connected = false; this.sample = null;
+    this.connected = false;
     buildDashboard(DEFAULT_LT1);
-  },
-  async live(lactateNow){
-    const basePace = 330 - (lactateNow-0.8)*(330-220)/7.2;
-    const baseHR = 110 + (lactateNow-0.8)*(175-110)/7.2;
-    return { pace: basePace + (Math.random()-.5)*5, hr: baseHR + (Math.random()-.5)*3, temp: 33.2 + (Math.random()-.5)*0.2, sweat: 1.1 + (lactateNow-0.8)*0.15 };
   }
 };
 
@@ -365,32 +386,20 @@ async function toggleCoros(){
 }
 $('btnCoros').addEventListener('click', toggleCoros);
 
-/* --- Watch Navigation --- */
-let currentWatchPage = 0;
-function showWatchPage(index) {
-  currentWatchPage = (index + 3) % 3;
-  for(let i=0; i<3; i++) {
-    $('w-page-'+i).classList.toggle('active', i === currentWatchPage);
-  }
-}
-function nextWatchPage() { showWatchPage(currentWatchPage + 1); }
-function prevWatchPage() { showWatchPage(currentWatchPage - 1); }
-
-/* --- Watch Data Updates --- */
-let lactate = 1.5, target = 1.5, elapsed = 0, alerted = false;
-
+/* --- UI Watch Render --- */
 function renderWatch(){
-  const z = zoneOf(lactate);
+  const z = zoneOf(currentLactate);
   document.documentElement.style.setProperty('--zone', `var(--${z.key})`);
   $('zoneName').textContent = z.name;
-  $('arc').style.strokeDashoffset = 251.3 * (1 - Math.min(lactate/8, 1));
+  $('arc').style.strokeDashoffset = 251.3 * (1 - Math.min(currentLactate/8, 1));
 
   const isExpert = document.body.dataset.detail === 'expert';
-  $('gCenter').innerHTML = isExpert ? `<b>${f1(lactate)}</b><small>mmol/L</small>` : `<span class="hint">${z.msg}</span>`;
+  $('gCenter').innerHTML = isExpert ? `<b>${f1(currentLactate)}</b><small>mmol/L</small>` : `<span class="hint">${z.msg}</span>`;
 
-  const m = (Coros.connected && Coros.sample) ? Coros.sample : simulatedMetrics(lactate);
-  $('pace').textContent = fmtPace(m.pace);$('hr').textContent = Math.round(m.hr);
-  $('skinTemp').textContent = m.temp.toFixed(1);$('sweatRate').textContent = m.sweat.toFixed(2);
+  let m = getMetabolics(currentSpeed);
+  $('pace').textContent = fmtPace(m.paceSec);
+  $('hr').textContent = Math.round(m.hr);$('skinTemp').textContent = m.temp.toFixed(1);
+  $('sweatRate').textContent = m.sweat.toFixed(2);$('hrSub').textContent = `Zone ${z.name.split(' ')[0]}`;
 
   if (z.key === 'red' && !alerted){ alerted = true; triggerAlert(); }
   if (z.key !== 'red') alerted = false;
@@ -403,17 +412,34 @@ function triggerAlert(){
 }
 function ackAlert(){ $('alert').classList.remove('show');$('device').classList.remove('buzz'); }
 
-setInterval(async () => {
-  elapsed++; lactate += (target - lactate) * 0.25; 
+// Loop principal de simulation : Vitesse immédiate, Lactate avec inertie physiologique
+setInterval(() => {
+  elapsed++; 
   $('clock').textContent = `${String(Math.floor(elapsed/60)).padStart(2,'0')}:${String(elapsed%60).padStart(2,'0')}`;
-  if (Coros.connected){ try { Coros.sample = await Coros.live(lactate); } catch(e){} }
+  
+  // Inertie mécanique (la vitesse s'ajuste vite)
+  currentSpeed += (targetSpeed - currentSpeed) * 0.2;
+  
+  // Inertie physiologique du lactate (rattrape doucement la cible due à la latence)
+  let m = getMetabolics(currentSpeed);
+  currentLactate += (m.targetLac - currentLactate) * 0.05; 
+  
   renderWatch();
 }, 1000);
 
-$('slider').addEventListener('input', e => { target = +e.target.value; lactate = +e.target.value; $('sliderOut').textContent = f1(target) + ' mmol/L'; renderWatch(); });
-$('btnRed').addEventListener('click', () => { target = 6.4; lactate = 6.4; renderWatch(); });$('btnAck').addEventListener('click', ackAlert);
+/* --- Inputs --- */
+$('sliderSpeed').addEventListener('input', e => { 
+    targetSpeed = +e.target.value; 
+    $('speedOut').textContent = f1(targetSpeed) + ' km/h'; 
+});
+$('btnRed').addEventListener('click', () => { 
+    targetSpeed = 20; 
+    $('sliderSpeed').value = 20; 
+    $('speedOut').textContent = '20.0 km/h';
+});
+$('btnAck').addEventListener('click', ackAlert);
 
-/* --- UI Toggles (Simple/Expert) --- */
+/* --- UI Toggles --- */
 function setDetail(d){
   document.body.dataset.detail = d;
   $('tabSimple').classList.toggle('on', d === 'simple');$('tabExpert').classList.toggle('on', d === 'expert');
@@ -422,15 +448,22 @@ function setDetail(d){
 }
 $('tabSimple').onclick = () => setDetail('simple');$('tabExpert').onclick = () => setDetail('expert');
 
-/* --- Dashboard Mobile (Graphiques & Nav) --- */
+let currentWatchPage = 0;
+function showWatchPage(index) {
+  currentWatchPage = (index + 3) % 3;
+  for(let i=0; i<3; i++) { $('w-page-'+i).classList.toggle('active', i === currentWatchPage); }
+}
+function nextWatchPage() { showWatchPage(currentWatchPage + 1); }
+function prevWatchPage() { showWatchPage(currentWatchPage - 1); }
+
 function navPhone(id, btn) {
   document.querySelectorAll('.p-screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  $(id).classList.add('active');
-  btn.classList.add('active');
+  $(id).classList.add('active'); btn.classList.add('active');
   if(id === 'p-dash' && document.body.dataset.detail === 'expert') { setTimeout(() => { chLt1.resize(); chPred.resize(); }, 50); }
 }
 
+/* --- Dashboard Mobile Chart.js --- */
 const weeks = Array.from({length:12}, (_,i) => 'W' + (i+1));
 const GOAL_LT1 = 260, GOAL_TIME = 3.2*3600;
 let chLt1, chPred, progress = 0;
@@ -463,7 +496,7 @@ function setView(v){
   if (v === 'phone'){ 
     ackAlert(); $('barFill').style.width = '0'; 
     setTimeout(() => $('barFill').style.width = progress + '%', 50); 
-    if(document.body.dataset.detail === 'expert') { setTimeout(() => { chLt1.resize(); chPred.resize(); }, 50); }
+    if(document.body.dataset.detail === 'expert' && $('p-dash').classList.contains('active')) { setTimeout(() => { chLt1.resize(); chPred.resize(); }, 50); }
   }
 }
 
