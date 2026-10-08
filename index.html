@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-/* ===== Variables de design (Ajout du Orange pour Z4) ===== */
+/* ===== Variables de design ===== */
 :root{
   --bg:#0b1016; --panel:#141b24; --line:#243040; --text:#f1f5f9; --muted:#8a9bb0;
   --blue:#3b82f6; --green:#22c55e; --yellow:#facc15; --orange:#f97316; --red:#ef4444;
@@ -55,8 +55,10 @@ body[data-view="watch"] .phone,body[data-view="phone"] .watch{opacity:0;pointer-
 /* ===== VUE 1 : LA MONTRE ===== */
 .watch{
   display:flex;flex-direction:column;
-  background:radial-gradient(120% 90% at 50% 20%,color-mix(in srgb,var(--zone) 40%,#000) 0%,#06090d 78%);
-  transition:background .8s; justify-content: center; align-items: center; position: relative;
+  /* Fond coloré dynamique imprégné de la couleur de la zone */
+  background:radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--zone) 40%, #000) 0%, color-mix(in srgb, var(--zone) 10%, #000) 100%);
+  transition:background .8s ease-in-out; 
+  justify-content: center; align-items: center; position: relative;
 }
 .watch-page { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; }
 .watch-page.active { display: flex; }
@@ -68,7 +70,9 @@ body[data-view="watch"] .phone,body[data-view="phone"] .watch{opacity:0;pointer-
 .w-top-status { position: absolute; top: 20px; font-size: 13px; color: #ffffffb0; font-weight: 600; display: flex; gap: 6px; }
 .w-top-status i { color: var(--green); font-style: normal; display: none; }
 .w-top-status.linked i { display: inline; }
-.w-zone{font-size:18px;font-weight:800; margin-bottom: 5px;}
+
+/* Texte de la zone prend la couleur */
+.w-zone{font-size:18px;font-weight:800; margin-bottom: 5px; color: var(--zone); transition: color .8s;}
 
 .gauge{position:relative;height:120px;display:grid;place-items:center}
 .gauge svg{width:220px;height:120px;overflow:visible}
@@ -76,12 +80,13 @@ body[data-view="watch"] .phone,body[data-view="phone"] .watch{opacity:0;pointer-
 .arc-fg{fill:none;stroke:var(--zone);stroke-width:16;stroke-linecap:round;
   stroke-dasharray:251.3;transition:stroke-dashoffset 1s ease,stroke .8s;filter:drop-shadow(0 0 8px var(--zone))}
 .g-center{position:absolute;bottom:8px;text-align:center;line-height:1}
-.g-center b{font-size:42px;font-weight:800;font-variant-numeric:tabular-nums}
+/* Chiffre du Lactate prend la couleur */
+.g-center b{font-size:42px;font-weight:800;font-variant-numeric:tabular-nums; color: var(--zone); transition: color .8s;}
 .g-center small{display:block;font-size:14px;color:#ffffffb8;margin-top:2px;font-weight:600}
-.g-center .hint{font-size:15px;color:#ffffffc0;font-weight:600}
+.g-center .hint{font-size:15px;color:var(--zone);font-weight:700;}
 
 .big-metric b { font-size: 64px; font-weight: 800; line-height: 1; display: block; margin-bottom: 5px; }
-.big-metric span { font-size: 16px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;}
+.big-metric span { font-size: 16px; color: #fff; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;}
 .big-metric .sub { font-size: 16px; margin-top: 10px; display: block; font-weight: 800; transition: color 0.3s;}
 .w-alert-btn { position: absolute; bottom: 20px; background: var(--red); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; }
 
@@ -206,8 +211,8 @@ body[data-detail="expert"] .expert-data { display: block; }
           </svg>
           <div class="g-center" id="gCenter"></div>
         </div>
-        <div class="expert-data" style="margin-top: 10px; font-size: 13px; color: #aaa;">
-          Temp: <b id="skinTemp" style="color:#fff">32.4</b>°C | Sweat: <b id="sweatRate" style="color:#fff">0.8</b> L/h
+        <div class="expert-data" style="margin-top: 10px; font-size: 13px; color: #fff;">
+          Temp: <b id="skinTemp">32.4</b>°C | Sweat: <b id="sweatRate">0.8</b> L/h
         </div>
       </div>
 
@@ -329,7 +334,6 @@ const fmtPace = s => `${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,
 const fmtTime = s => `${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(Math.round(s%60)).padStart(2,'0')}`;
 const f1 = n => n.toFixed(1);
 
-// Nouvelles Zones avec le mapping couleur demandé (Z1 Vert -> Z5 Rouge)
 const ZONES = [
   {max:1.5, key:'green',  name:'Z1 - Recovery',      msg:'Base / Warm-up'},
   {max:2.5, key:'blue',   name:'Z2 - Endurance',     msg:'Fat Oxidation'},
@@ -339,10 +343,8 @@ const ZONES = [
 ];
 const zoneOf = l => ZONES.find(z => l < z.max);
 
-// Tableau de couleurs correspondant aux Zones 1 à 5
 const HR_COLORS = ['var(--green)', 'var(--blue)', 'var(--yellow)', 'var(--orange)', 'var(--red)'];
 
-// Calcul de la Zone FC pure
 function getHrZone(hr) {
   if (hr < 100) return 1;
   if (hr < 140) return 2;
@@ -351,7 +353,6 @@ function getHrZone(hr) {
   return 5;
 }
 
-// Modèle Physiologique : Vitesse -> HR, Temp, Sweat & Lactate 
 let targetSpeed = 10;
 let currentSpeed = 10;
 let currentLactate = 0.8;
@@ -360,13 +361,10 @@ let alerted = false;
 
 function getMetabolics(speedKmh) {
   let paceSec = (60 / speedKmh) * 60;
-  
-  // FC proportionnelle à la vitesse (5 km/h = 90 bpm | 21 km/h = ~195 bpm)
   let hr = 90 + ((speedKmh - 5) / 16) * 105; 
   let temp = 31.0 + (speedKmh - 5) * 0.15;
   let sweat = 0.2 + (speedKmh - 5) * 0.1;
   
-  // Modélisation courbe Lactate adaptée pour franchir les seuils Z1->Z5 logiquement
   let targetLac = 0.8;
   if (speedKmh > 7) {
       targetLac = 0.8 + Math.pow(speedKmh - 7, 2.2) * 0.025;
@@ -414,7 +412,6 @@ function renderWatch(){
   $('pace').textContent = fmtPace(m.paceSec);$('hr').textContent = Math.round(m.hr);
   $('skinTemp').textContent = m.temp.toFixed(1);$('sweatRate').textContent = m.sweat.toFixed(2);
   
-  // Affichage Zone FC indépendante mais avec le même code couleur
   let hrZ = getHrZone(m.hr);
   $('hrSub').textContent = `Zone ${hrZ}`;
   $('hrSub').style.color = HR_COLORS[hrZ - 1];
@@ -430,22 +427,15 @@ function triggerAlert(){
 }
 function ackAlert(){ $('alert').classList.remove('show');$('device').classList.remove('buzz'); }
 
-// Loop principal de simulation
 setInterval(() => {
   elapsed++; 
   $('clock').textContent = `${String(Math.floor(elapsed/60)).padStart(2,'0')}:${String(elapsed%60).padStart(2,'0')}`;
-  
-  // Inertie de la vitesse
   currentSpeed += (targetSpeed - currentSpeed) * 0.2;
-  
-  // Inertie physiologique du lactate
   let m = getMetabolics(currentSpeed);
   currentLactate += (m.targetLac - currentLactate) * 0.05; 
-  
   renderWatch();
 }, 1000);
 
-/* --- Inputs --- */
 $('sliderSpeed').addEventListener('input', e => { 
     targetSpeed = +e.target.value; 
     $('speedOut').textContent = f1(targetSpeed) + ' km/h'; 
@@ -457,7 +447,6 @@ $('btnRed').addEventListener('click', () => {
 });
 $('btnAck').addEventListener('click', ackAlert);
 
-/* --- UI Toggles --- */
 function setDetail(d){
   document.body.dataset.detail = d;
   $('tabSimple').classList.toggle('on', d === 'simple');$('tabExpert').classList.toggle('on', d === 'expert');
@@ -481,7 +470,6 @@ function navPhone(id, btn) {
   if(id === 'p-dash' && document.body.dataset.detail === 'expert') { setTimeout(() => { chLt1.resize(); chPred.resize(); }, 50); }
 }
 
-/* --- Dashboard Mobile Chart.js --- */
 const weeks = Array.from({length:12}, (_,i) => 'W' + (i+1));
 const GOAL_LT1 = 260, GOAL_TIME = 3.2*3600;
 let chLt1, chPred, progress = 0;
